@@ -239,7 +239,70 @@ public class Socket {
         return Data(buffer: frame)
     }
 
+    fileprivate func sockoptsize(_ level: Int32, _ name: Int32) -> Int {
+        var length = socklen_t(256)
+        var buffer = [UInt8](repeating: 0, count: Int(length))
+        return buffer.withUnsafeMutableBufferPointer() {
+            (buffer: inout UnsafeMutableBufferPointer<UInt8>) -> Int in
+            let result = Glibc.getsockopt(self.fd, level, name, buffer.baseAddress, &length)
+            if result != 0 {
+                return 0
+            }
+            return Int(length)
+        }
+    }
+
+    public func getsockopt<T>(level: Int, name: Int32) -> T? {
+
+        guard sockoptsize(Int32(level), name) == MemoryLayout<T>.size else {
+            return nil
+        }
+
+        let ptr = UnsafeMutablePointer<T>.allocate(capacity: 1)
+        defer {
+            ptr.deallocate()
+        }
+        var length = socklen_t(MemoryLayout<T>.size)
+        let result = Glibc.getsockopt(self.fd, Int32(level), name, ptr, &length)
+        if result != 0 {
+            return nil
+        }
+        let value = ptr.pointee
+        return value
+    }
+
     deinit {
         close(self.fd)
     }
+}
+
+
+public extension Socket {
+
+    var socketOptions: SocketOptions {
+        return SocketOptions(socket: self)
+    }
+
+}
+
+public class SocketOptions {
+
+    public fileprivate(set) weak var socket: Socket?
+
+    public init(socket: Socket) {
+        self.socket = socket
+    }
+
+}
+
+public extension SocketOptions {
+    // var reuseAddress: Bool {
+    //     get {
+    //         return socket?.getsockopt(level: Int(SOL_SOCKET), name: SO_REUSEADDR) ?? false
+    //     }
+    //     set {
+    //         socket?.setsockopt(level: Int(SOL_SOCKET), name: SO_REUSEADDR, value: newValue)
+    //     }
+    // }
+
 }
