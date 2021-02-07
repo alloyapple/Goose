@@ -1,4 +1,12 @@
+import Foundation
 import Glibc
+
+public typealias Byte = UInt8
+public typealias Bytes = [Byte]
+public typealias ByteBuffer = UnsafeBufferPointer<Byte>
+public typealias MutableByteBuffer = UnsafeMutableBufferPointer<Byte>
+public typealias BytesPointer = UnsafePointer<Byte>
+public typealias MutableBytesPointer = UnsafeMutablePointer<Byte>
 
 public enum SockFamily: Int32 {
     case inet = 2
@@ -30,14 +38,16 @@ public class Socket {
         self.type = type
     }
 
-    public init(fd: Int32, family: SockFamily = .inet, type: SocketType = .tcp, proto: SocketProtocol = .tcp) {
+    public init(
+        fd: Int32, family: SockFamily = .inet, type: SocketType = .tcp, proto: SocketProtocol = .tcp
+    ) {
         self.family = family
         self.proto = proto
         self.type = type
         self.fd = fd
     }
 
-    public func accept() throws ->  Socket {
+    public func accept() throws -> Socket {
         let clientFd = Glibc.accept(fd, nil, nil)
         guard clientFd > 0 else {
             throw SocketError.error(errnum: clientFd)
@@ -60,7 +70,6 @@ public class Socket {
         // NULL, then the returned socket addresses will be suitable for
         // bind(2)ing a socket that will accept(2) connections.
         hints.ai_flags = AI_PASSIVE
-
 
         // Look ip the sockeaddr for the hostname
         var result: UnsafeMutablePointer<addrinfo>?
@@ -135,10 +144,9 @@ public class Socket {
 
         res = Glibc.connect(self.fd, info.pointee.ai_addr, info.pointee.ai_addrlen)
         guard res == 0 else {
-           throw SocketError.error(errnum: res)
+            throw SocketError.error(errnum: res)
         }
 
-        
     }
 
     public func connect(path: String) throws {
@@ -161,7 +169,9 @@ public class Socket {
         memcpy(&acceptAddr.sun_path.0, &buffer[0], buffer.count - 1)
 
         let ret = withUnsafeMutablePointer(to: &acceptAddr) {
-            Glibc.connect(fd, UnsafeMutableRawPointer($0).assumingMemoryBound(to: sockaddr.self), UInt32(addrlen))
+            Glibc.connect(
+                fd, UnsafeMutableRawPointer($0).assumingMemoryBound(to: sockaddr.self),
+                UInt32(addrlen))
 
         }
 
@@ -169,7 +179,6 @@ public class Socket {
             throw SocketError.error(errnum: ret)
         }
 
-        
     }
 
     public func listen(backlog: Int32 = 4096) throws {
@@ -177,6 +186,68 @@ public class Socket {
         guard res == 0 else {
             throw SocketError.error(errnum: res)
         }
+    }
+
+    public func write(_ data: [UInt8]) -> Int {
+        return Glibc.write(self.fd, data, data.count)
+    }
+
+    public func write(_ data: String) -> Int {
+        let array: [UInt8] = Array(data.utf8)
+        return Glibc.write(self.fd, array, array.count)
+    }
+
+    public func read(_ data: inout [Int8]) -> Int {
+        return Glibc.read(self.fd, &data, data.count)
+    }
+
+    public func read(max: Int, into buffer: MutableByteBuffer) -> Int? {
+        let receivedBytes = Glibc.read(self.fd, buffer.baseAddress.unsafelyUnwrapped, max)
+
+        guard receivedBytes != -1 else {
+            switch errno {
+            case EINTR:
+                // try again
+                return read(max: max, into: buffer)
+            case ECONNRESET:
+                // closed by peer, need to close this side.
+                // Since this is not an error, no need to throw unless the close
+                // itself throws an error.
+                _ = close()
+                return 0
+            case EAGAIN:
+                // timeout reached (linux)
+                return 0
+            default:
+                return nil
+            }
+        }
+
+        guard receivedBytes > 0 else {
+            // receiving 0 indicates a proper close .. no error.
+            // attempt a close, no failure possible because throw indicates already closed
+            // if already closed, no issue.
+            // do NOT propogate as error
+            _ = close()
+            return 0
+        }
+
+        return receivedBytes
+    }
+
+    public func read(_ max: Int) -> Data? {
+        var pointer = MutableBytesPointer.allocate(capacity: max)
+        defer {
+            pointer.deallocate()
+            pointer.deinitialize(count: max)
+        }
+        let buffer = MutableByteBuffer(start: pointer, count: max)
+        guard let read = self.read(max: max, into: buffer) else {
+            return nil
+        }
+
+        let frame = ByteBuffer(start: pointer, count: read)
+        return Data(buffer: frame)
     }
 
     deinit {
