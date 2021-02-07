@@ -1,5 +1,5 @@
+import Foundation
 import Glibc
-
 
 public func toAddr(_ addr: inout sockaddr_in) -> UnsafeMutablePointer<sockaddr> {
     return withUnsafeMutablePointer(to: &addr) {
@@ -22,5 +22,11 @@ public func toAddr(_ addr: inout sockaddr_un) -> UnsafeMutablePointer<sockaddr> 
         $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
             $0
         }
+    }
+}
+
+extension Data {
+    public var asString: String? {
+        return String(data: self, encoding: .utf8)
     }
 }

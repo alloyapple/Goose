@@ -15,6 +15,7 @@ final class GooseTests: XCTestCase {
                 try server.bind(hostname: "0.0.0.0", port: 8999)
                 try server.listen()
                 let client = try server.accept()
+                _ = try client.write("hello world")
             } catch SocketError.message(let msg) {
                 XCTAssert(false, "异常错误: \(msg)")
             } catch {
@@ -27,6 +28,10 @@ final class GooseTests: XCTestCase {
             let client = Socket()
             do {
                 try client.connect(hostname: "127.0.0.1", port: 8999)
+                let str = try client.read(100).asString ?? ""
+                
+                print("received: \(str)")
+
             } catch SocketError.message(let msg) {
                 XCTAssert(false, "异常错误: \(msg)")
             } catch {

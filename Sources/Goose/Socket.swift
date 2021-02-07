@@ -50,7 +50,7 @@ public class Socket {
     public func accept() throws -> Socket {
         let clientFd = Glibc.accept(fd, nil, nil)
         guard clientFd > 0 else {
-            throw SocketError.error(errnum: clientFd)
+            throw SocketError.error()
         }
 
         return Socket(fd: clientFd, family: self.family, type: self.type, proto: self.proto)
@@ -76,7 +76,7 @@ public class Socket {
 
         var res = Glibc.getaddrinfo(hostname, "\(port)", &hints, &result)
         guard res == 0 else {
-            throw SocketError.error(errnum: res)
+            throw SocketError.error()
         }
 
         defer {
@@ -84,12 +84,12 @@ public class Socket {
         }
 
         guard let info = result else {
-            throw SocketError.error(errnum: res)
+            throw SocketError.error()
         }
 
         res = Glibc.bind(fd, info.pointee.ai_addr, info.pointee.ai_addrlen)
         guard res == 0 else {
-            throw SocketError.error(errnum: res)
+            throw SocketError.error()
         }
     }
 
@@ -114,7 +114,7 @@ public class Socket {
         let ret = Glibc.bind(self.fd, toAddr(&acceptAddr), UInt32(addrlen))
 
         guard ret > 0 else {
-            throw SocketError.error(errnum: ret)
+            throw SocketError.error()
         }
     }
 
@@ -132,19 +132,19 @@ public class Socket {
 
         var res = getaddrinfo(hostname, "\(port)", &hints, &result)
         guard res == 0 else {
-            throw SocketError.error(errnum: res)
+            throw SocketError.error()
         }
         defer {
             freeaddrinfo(result)
         }
 
         guard let info = result else {
-            throw SocketError.error(errnum: res)
+            throw SocketError.error()
         }
 
         res = Glibc.connect(self.fd, info.pointee.ai_addr, info.pointee.ai_addrlen)
         guard res == 0 else {
-            throw SocketError.error(errnum: res)
+            throw SocketError.error()
         }
 
     }
@@ -176,7 +176,7 @@ public class Socket {
         }
 
         guard ret > 0 else {
-            throw SocketError.error(errnum: ret)
+            throw SocketError.error()
         }
 
     }
@@ -184,65 +184,55 @@ public class Socket {
     public func listen(backlog: Int32 = 4096) throws {
         let res = Glibc.listen(self.fd, backlog)
         guard res == 0 else {
-            throw SocketError.error(errnum: res)
+            throw SocketError.error()
         }
     }
 
-    public func write(_ data: [UInt8]) -> Int {
-        return Glibc.write(self.fd, data, data.count)
+    public func write(_ data: [UInt8]) throws -> Int {
+        let ret = Glibc.write(self.fd, data, data.count)
+
+        guard ret >= 0 else {
+            throw SocketError.error()
+        }
+
+        return ret
     }
 
-    public func write(_ data: String) -> Int {
+    public func write(_ data: String) throws -> Int {
         let array: [UInt8] = Array(data.utf8)
-        return Glibc.write(self.fd, array, array.count)
+        return try write(array)
     }
 
-    public func read(_ data: inout [Int8]) -> Int {
-        return Glibc.read(self.fd, &data, data.count)
-    }
-
-    public func read(max: Int, into buffer: MutableByteBuffer) -> Int? {
-        let receivedBytes = Glibc.read(self.fd, buffer.baseAddress.unsafelyUnwrapped, max)
-
-        guard receivedBytes != -1 else {
-            switch errno {
-            case EINTR:
-                // try again
-                return read(max: max, into: buffer)
-            case ECONNRESET:
-                // closed by peer, need to close this side.
-                // Since this is not an error, no need to throw unless the close
-                // itself throws an error.
-                return 0
-            case EAGAIN:
-                // timeout reached (linux)
-                return 0
-            default:
-                return nil
-            }
+    public func read(_ data: inout [Int8]) throws -> Int {
+        let ret =  Glibc.read(self.fd, &data, data.count)
+        guard ret >= 0 else {
+            throw SocketError.error()
         }
 
-        guard receivedBytes > 0 else {
-            // receiving 0 indicates a proper close .. no error.
-            // attempt a close, no failure possible because throw indicates already closed
-            // if already closed, no issue.
-            // do NOT propogate as error
-           
-            return 0
-        }
-
-        return receivedBytes
+        return ret
     }
 
-    public func read(_ max: Int) -> Data? {
-        var pointer = MutableBytesPointer.allocate(capacity: max)
+    public func read(max: Int, into buffer: MutableByteBuffer) throws ->  Int {
+        let ret = Glibc.read(self.fd, buffer.baseAddress.unsafelyUnwrapped, max)
+        guard ret >= 0 else {
+            throw SocketError.error()
+        }
+
+        return ret
+       
+    }
+
+    public func read(_ max: Int) throws -> Data {
+        let pointer = MutableBytesPointer.allocate(capacity: max)
         defer {
             pointer.deallocate()
             pointer.deinitialize(count: max)
         }
         let buffer = MutableByteBuffer(start: pointer, count: max)
-        guard let read = self.read(max: max, into: buffer) else {
-            return nil
+        let read = try self.read(max: max, into: buffer)
+
+        guard read >= 0 else {
+            throw SocketError.error()
         }
 
         let frame = ByteBuffer(start: pointer, count: read)
