@@ -213,7 +213,6 @@ public class Socket {
                 // closed by peer, need to close this side.
                 // Since this is not an error, no need to throw unless the close
                 // itself throws an error.
-                _ = close()
                 return 0
             case EAGAIN:
                 // timeout reached (linux)
@@ -228,7 +227,7 @@ public class Socket {
             // attempt a close, no failure possible because throw indicates already closed
             // if already closed, no issue.
             // do NOT propogate as error
-            _ = close()
+           
             return 0
         }
 
