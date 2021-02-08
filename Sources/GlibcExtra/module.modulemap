@@ -1,0 +1,10 @@
+module GlibcExtra {
+    header "shim.h"
+    header "arc4random.h"
+
+    link "z"
+    link "ssl"
+    link "crypto"
+
+    export *
+}
