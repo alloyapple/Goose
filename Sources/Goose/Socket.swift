@@ -204,7 +204,7 @@ public class Socket {
     }
 
     public func read(_ data: inout [Int8]) throws -> Int {
-        let ret =  Glibc.read(self.fd, &data, data.count)
+        let ret = Glibc.read(self.fd, &data, data.count)
         guard ret >= 0 else {
             throw SocketError.error()
         }
@@ -212,14 +212,14 @@ public class Socket {
         return ret
     }
 
-    public func read(max: Int, into buffer: MutableByteBuffer) throws ->  Int {
+    public func read(max: Int, into buffer: MutableByteBuffer) throws -> Int {
         let ret = Glibc.read(self.fd, buffer.baseAddress.unsafelyUnwrapped, max)
         guard ret >= 0 else {
             throw SocketError.error()
         }
 
         return ret
-       
+
     }
 
     public func read(_ max: Int) throws -> Data {
@@ -242,7 +242,7 @@ public class Socket {
     fileprivate func sockoptsize(_ level: Int32, _ name: Int32) -> Int {
         var length = socklen_t(256)
         var buffer = [UInt8](repeating: 0, count: Int(length))
-        return buffer.withUnsafeMutableBufferPointer() {
+        return buffer.withUnsafeMutableBufferPointer {
             (buffer: inout UnsafeMutableBufferPointer<UInt8>) -> Int in
             let result = Glibc.getsockopt(self.fd, level, name, buffer.baseAddress, &length)
             if result != 0 {
@@ -271,15 +271,40 @@ public class Socket {
         return value
     }
 
+    @discardableResult
+    public func setsockopt<T>(level: Int, name: Int32, value: T) -> Bool {
+        guard sockoptsize(Int32(level), name) == MemoryLayout<T>.size else {
+            return false
+        }
+
+        var value = value
+        let result = Glibc.setsockopt(
+            self.fd, Int32(level), name, &value, socklen_t(MemoryLayout<T>.size))
+        if result != 0 {
+            return false
+        }
+
+        return true
+    }
+
+    public func getsockopt(level: Int, name: Int32) -> Bool {
+        let value: Int32 = getsockopt(level: level, name: name) ?? -1
+        return value != 0
+    }
+
+    public func setsockopt(level: Int, name: Int32, value: Bool) {
+        let value: Int32 = value ? -1 : 0
+        setsockopt(level: level, name: name, value: value)
+    }
+
     deinit {
         close(self.fd)
     }
 }
 
+extension Socket {
 
-public extension Socket {
-
-    var socketOptions: SocketOptions {
+    public var options: SocketOptions {
         return SocketOptions(socket: self)
     }
 
@@ -295,14 +320,14 @@ public class SocketOptions {
 
 }
 
-public extension SocketOptions {
-    // var reuseAddress: Bool {
-    //     get {
-    //         return socket?.getsockopt(level: Int(SOL_SOCKET), name: SO_REUSEADDR) ?? false
-    //     }
-    //     set {
-    //         socket?.setsockopt(level: Int(SOL_SOCKET), name: SO_REUSEADDR, value: newValue)
-    //     }
-    // }
+extension SocketOptions {
+    var reuseAddress: Bool {
+        get {
+            return socket?.getsockopt(level: Int(SOL_SOCKET), name: SO_REUSEADDR) ?? false
+        }
+        set {
+            socket?.setsockopt(level: Int(SOL_SOCKET), name: SO_REUSEADDR, value: newValue)
+        }
+    }
 
 }

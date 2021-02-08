@@ -12,6 +12,7 @@ final class GooseTests: XCTestCase {
         DispatchQueue.global(priority: .background).async {
             let server = Socket()
             do {
+                server.options.reuseAddress = true
                 try server.bind(hostname: "0.0.0.0", port: 8999)
                 try server.listen()
                 let client = try server.accept()
@@ -27,6 +28,7 @@ final class GooseTests: XCTestCase {
         DispatchQueue.global(priority: .high).async {
             let client = Socket()
             do {
+                client.options.reuseAddress = true
                 try client.connect(hostname: "127.0.0.1", port: 8999)
                 let str = try client.read(100).asString ?? ""
                 
