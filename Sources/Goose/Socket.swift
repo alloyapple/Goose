@@ -50,7 +50,7 @@ public class Socket {
     public func accept() throws -> Socket {
         let clientFd = Glibc.accept(fd, nil, nil)
         guard clientFd > 0 else {
-            throw SocketError.error()
+            throw GooseError.error()
         }
 
         return Socket(fd: clientFd, family: self.family, type: self.type, proto: self.proto)
@@ -76,7 +76,7 @@ public class Socket {
 
         var res = Glibc.getaddrinfo(hostname, "\(port)", &hints, &result)
         guard res == 0 else {
-            throw SocketError.error()
+            throw GooseError.error()
         }
 
         defer {
@@ -84,12 +84,12 @@ public class Socket {
         }
 
         guard let info = result else {
-            throw SocketError.error()
+            throw GooseError.error()
         }
 
         res = Glibc.bind(fd, info.pointee.ai_addr, info.pointee.ai_addrlen)
         guard res == 0 else {
-            throw SocketError.error()
+            throw GooseError.error()
         }
     }
 
@@ -114,7 +114,7 @@ public class Socket {
         let ret = Glibc.bind(self.fd, toAddr(&acceptAddr), UInt32(addrlen))
 
         guard ret > 0 else {
-            throw SocketError.error()
+            throw GooseError.error()
         }
     }
 
@@ -132,19 +132,19 @@ public class Socket {
 
         var res = getaddrinfo(hostname, "\(port)", &hints, &result)
         guard res == 0 else {
-            throw SocketError.error()
+            throw GooseError.error()
         }
         defer {
             freeaddrinfo(result)
         }
 
         guard let info = result else {
-            throw SocketError.error()
+            throw GooseError.error()
         }
 
         res = Glibc.connect(self.fd, info.pointee.ai_addr, info.pointee.ai_addrlen)
         guard res == 0 else {
-            throw SocketError.error()
+            throw GooseError.error()
         }
 
     }
@@ -155,7 +155,7 @@ public class Socket {
             addr.pointee.ai_addrlen)
 
         guard ret > 0 else {
-            throw SocketError.error()
+            throw GooseError.error()
         }
 
     }
@@ -187,7 +187,7 @@ public class Socket {
         }
 
         guard ret > 0 else {
-            throw SocketError.error()
+            throw GooseError.error()
         }
 
     }
@@ -195,7 +195,7 @@ public class Socket {
     public func listen(backlog: Int32 = 4096) throws {
         let res = Glibc.listen(self.fd, backlog)
         guard res == 0 else {
-            throw SocketError.error()
+            throw GooseError.error()
         }
     }
 
@@ -203,7 +203,7 @@ public class Socket {
         let ret = Glibc.write(self.fd, data, data.count)
 
         guard ret >= 0 else {
-            throw SocketError.error()
+            throw GooseError.error()
         }
 
         return ret
@@ -217,7 +217,7 @@ public class Socket {
     public func read(_ data: inout [Int8]) throws -> Int {
         let ret = Glibc.read(self.fd, &data, data.count)
         guard ret >= 0 else {
-            throw SocketError.error()
+            throw GooseError.error()
         }
 
         return ret
@@ -226,7 +226,7 @@ public class Socket {
     public func read(max: Int, into buffer: MutableByteBuffer) throws -> Int {
         let ret = Glibc.read(self.fd, buffer.baseAddress.unsafelyUnwrapped, max)
         guard ret >= 0 else {
-            throw SocketError.error()
+            throw GooseError.error()
         }
 
         return ret
@@ -243,7 +243,7 @@ public class Socket {
         let read = try self.read(max: max, into: buffer)
 
         guard read >= 0 else {
-            throw SocketError.error()
+            throw GooseError.error()
         }
 
         let frame = ByteBuffer(start: pointer, count: read)

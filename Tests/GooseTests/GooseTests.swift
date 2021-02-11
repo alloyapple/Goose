@@ -17,7 +17,7 @@ final class GooseTests: XCTestCase {
                 try server.listen()
                 let client = try server.accept()
                 _ = try client.write("hello world")
-            } catch SocketError.message(let msg) {
+            } catch GooseError.message(let msg) {
                 XCTAssert(false, "异常错误: \(msg)")
             } catch {
                 XCTAssert(false, "未知错误")
@@ -34,7 +34,7 @@ final class GooseTests: XCTestCase {
                 
                 print("received: \(str)")
 
-            } catch SocketError.message(let msg) {
+            } catch GooseError.message(let msg) {
                 XCTAssert(false, "异常错误: \(msg)")
             } catch {
                 XCTAssert(false, "链接错误")

@@ -15,11 +15,11 @@ public func getaddrinfo(
 
     let res = getaddrinfo(host, "\(port)", &hints, &result)
     guard res >= 0 else {
-        throw SocketError.error()
+        throw GooseError.error()
     }
 
     guard res >= 0 else {
-        throw SocketError.error()
+        throw GooseError.error()
     }
 
     return result

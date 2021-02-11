@@ -1,13 +1,13 @@
 import Glibc
 
-public enum SocketError: Error {
+public enum GooseError: Error {
 
     case message(msg: String)
 
     public static func error(file: String = #file, line: Int = #line, func: String = #function
-    ) -> SocketError {
+    ) -> GooseError {
         let error = String(cString: strerror(errno))
         let msg = "\(file):\(line) \(`func`):\(error)"
-        return SocketError.message(msg: msg)
+        return GooseError.message(msg: msg)
     }
 }
