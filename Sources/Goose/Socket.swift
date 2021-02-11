@@ -14,12 +14,12 @@ public enum SockFamily: Int32 {
     case unix = 1
 }
 
-public enum SocketType: Int32 {
+public enum SockType: Int32 {
     case tcp = 1
     case udp = 2
 }
 
-public enum SocketProtocol: Int32 {
+public enum SockProt: Int32 {
     case tcp = 6
     case udp = 17
     case unix = 0
@@ -28,10 +28,10 @@ public enum SocketProtocol: Int32 {
 public class Socket {
     public let fd: Int32
     public let family: SockFamily
-    public let proto: SocketProtocol
-    public let type: SocketType
+    public let proto: SockProt
+    public let type: SockType
 
-    public init(family: SockFamily = .inet, type: SocketType = .tcp, proto: SocketProtocol = .tcp) {
+    public init(family: SockFamily = .inet, type: SockType = .tcp, proto: SockProt = .tcp) {
         self.fd = Glibc.socket(family.rawValue, type.rawValue, proto.rawValue)
         self.family = family
         self.proto = proto
@@ -39,7 +39,7 @@ public class Socket {
     }
 
     public init(
-        fd: Int32, family: SockFamily = .inet, type: SocketType = .tcp, proto: SocketProtocol = .tcp
+        fd: Int32, family: SockFamily = .inet, type: SockType = .tcp, proto: SockProt = .tcp
     ) {
         self.family = family
         self.proto = proto

@@ -3,7 +3,7 @@ import Glibc
 
 public func getaddrinfo(
     host: String, port: UInt16, family: SockFamily = SockFamily.inet,
-    type: SocketType = SocketType.tcp, proto: SocketProtocol = SocketProtocol.tcp, flags: Int32 = 0
+    type: SockType = SockType.tcp, proto: SockProt = SockProt.tcp, flags: Int32 = 0
 ) throws -> UnsafeMutablePointer<addrinfo>? {
     var hints = addrinfo()
     // Support both IPv4 and IPv6
