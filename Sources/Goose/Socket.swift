@@ -31,7 +31,7 @@ public enum SockProt: Int32 {
     case tcp = 6
     case udp = 17
     case unix = 0
-    
+
     public init(fromRawValue: Int32) {
         self = SockProt(rawValue: fromRawValue) ?? .tcp
     }
@@ -45,13 +45,6 @@ public class Socket {
 
     public init(family: SockFamily = .inet, type: SockType = .tcp, proto: SockProt = .tcp) {
         self.fd = Glibc.socket(family.rawValue, type.rawValue, proto.rawValue)
-        self.family = family
-        self.proto = proto
-        self.type = type
-    }
-
-    public init(family: Int32, type: Int32, proto: Int32) {
-        self.fd = Glibc.socket(family, type, type)
         self.family = family
         self.proto = proto
         self.type = type
