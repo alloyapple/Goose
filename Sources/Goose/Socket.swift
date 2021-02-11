@@ -149,6 +149,17 @@ public class Socket {
 
     }
 
+    public func connect(addr: UnsafeMutablePointer<addrinfo>) throws {
+        let ret = Glibc.connect(
+            fd, addr.pointee.ai_addr,
+            addr.pointee.ai_addrlen)
+
+        guard ret > 0 else {
+            throw SocketError.error()
+        }
+
+    }
+
     public func connect(path: String) throws {
         _ = Glibc.unlink(path)
 
