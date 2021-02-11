@@ -68,41 +68,21 @@ public class Socket {
         return Socket(fd: clientFd, family: self.family, type: self.type, proto: self.proto)
     }
 
-    public func bind(hostname: String? = "localhost", port: UInt16 = 80) throws {
-        var hints = addrinfo()
+    public func bind(hostname: String = "localhost", port: UInt16 = 80) throws {
 
-        // Support both IPv4 and IPv6
-        hints.ai_family = self.family.rawValue
+        let addressList = try getAddrinfo(
+            host: hostname, port: port, family: self.family,
+            type: self.type, proto: self.proto, flags: AI_PASSIVE)
 
-        // Specify that this is a TCP Stream
-        hints.ai_socktype = self.type.rawValue
-        hints.ai_protocol = self.proto.rawValue
-
-        // If the AI_PASSIVE flag is specified in hints.ai_flags, and node is
-        // NULL, then the returned socket addresses will be suitable for
-        // bind(2)ing a socket that will accept(2) connections.
-        hints.ai_flags = AI_PASSIVE
-
-        // Look ip the sockeaddr for the hostname
-        var result: UnsafeMutablePointer<addrinfo>?
-
-        var res = Glibc.getaddrinfo(hostname, "\(port)", &hints, &result)
-        guard res == 0 else {
-            throw GooseError.error()
+        for addr in addressList {
+            let res = Glibc.bind(fd, addr.pointee.ai_addr, addr.pointee.ai_addrlen)
+            guard res != 0 else {
+                return
+            }
         }
 
-        defer {
-            freeaddrinfo(result)
-        }
+        throw GooseError.error()
 
-        guard let info = result else {
-            throw GooseError.error()
-        }
-
-        res = Glibc.bind(fd, info.pointee.ai_addr, info.pointee.ai_addrlen)
-        guard res == 0 else {
-            throw GooseError.error()
-        }
     }
 
     public func bind(path: String) throws {
@@ -131,34 +111,18 @@ public class Socket {
     }
 
     public func connect(hostname: String = "localhost", port: UInt16 = 80) throws {
-        var hints = addrinfo()
+        let addressList = try getAddrinfo(
+            host: hostname, port: port, family: self.family,
+            type: self.type, proto: self.proto, flags: AI_PASSIVE)
 
-        // Support both IPv4 and IPv6
-        hints.ai_family = self.family.rawValue
-
-        // Specify that this is a TCP Stream
-        hints.ai_socktype = self.type.rawValue
-
-        // Look ip the sockeaddr for the hostname
-        var result: UnsafeMutablePointer<addrinfo>?
-
-        var res = getaddrinfo(hostname, "\(port)", &hints, &result)
-        guard res == 0 else {
-            throw GooseError.error()
-        }
-        defer {
-            freeaddrinfo(result)
+        for addr in addressList {
+            let res = Glibc.connect(fd, addr.pointee.ai_addr, addr.pointee.ai_addrlen)
+            guard res != 0 else {
+                return
+            }
         }
 
-        guard let info = result else {
-            throw GooseError.error()
-        }
-
-        res = Glibc.connect(self.fd, info.pointee.ai_addr, info.pointee.ai_addrlen)
-        guard res == 0 else {
-            throw GooseError.error()
-        }
-
+        throw GooseError.error()
     }
 
     public func connect(addr: UnsafeMutablePointer<addrinfo>) throws {

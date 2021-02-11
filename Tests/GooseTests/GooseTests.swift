@@ -46,7 +46,20 @@ final class GooseTests: XCTestCase {
         _ = group.wait(timeout: .now() + 4)
     }
 
+    func testGetAddrinfo() {
+        do {
+            let r = try getAddrinfo(host: "www.163.com", port: 80)
+
+            for addr in r {
+                print("\(addr.pointee.ai_addrlen)")
+            }
+        } catch {
+
+        }
+    }
+
     static var allTests = [
-        ("测试socket", testSocket)
+        ("测试socket", testSocket),
+        ("测试GetAddrInfo", testGetAddrinfo),
     ]
 }
