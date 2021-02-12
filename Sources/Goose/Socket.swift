@@ -308,7 +308,7 @@ public class SocketOptions {
 }
 
 extension SocketOptions {
-    var reuseAddress: Bool {
+    public var reuseAddress: Bool {
         get {
             return socket?.getsockopt(level: Int(SOL_SOCKET), name: SO_REUSEADDR) ?? false
         }
@@ -317,7 +317,7 @@ extension SocketOptions {
         }
     }
 
-    var noDelay: Bool {
+    public  var noDelay: Bool {
         get {
             return socket?.getsockopt(level: IPPROTO_TCP, name: TCP_NODELAY) ?? false
         }
@@ -326,7 +326,7 @@ extension SocketOptions {
         }
     }
 
-    var keepAlive: Bool {
+    public var keepAlive: Bool {
         get {
             return socket?.getsockopt(level: Int(SOL_SOCKET), name: SO_KEEPALIVE) ?? false
         }
@@ -335,7 +335,7 @@ extension SocketOptions {
         }
     }
 
-    var keepAliveInterval: Int32 {
+    public var keepAliveInterval: Int32 {
         get {
             return socket?.getsockopt(level: IPPROTO_TCP, name: TCP_KEEPINTVL) ?? 0
         }
@@ -345,7 +345,7 @@ extension SocketOptions {
     }
 
     /// number of keepalives before close
-    var keepAliveCount: Int32 {
+    public var keepAliveCount: Int32 {
         get {
             return socket?.getsockopt(level: IPPROTO_TCP, name: TCP_KEEPCNT) ?? 0
         }
