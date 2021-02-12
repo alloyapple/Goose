@@ -317,4 +317,41 @@ extension SocketOptions {
         }
     }
 
+    var noDelay: Bool {
+        get {
+            return socket?.getsockopt(level: IPPROTO_TCP, name: TCP_NODELAY) ?? false
+        }
+        set {
+            socket?.setsockopt(level: IPPROTO_TCP, name: TCP_NODELAY, value: newValue)
+        }
+    }
+
+    var keepAlive: Bool {
+        get {
+            return socket?.getsockopt(level: Int(SOL_SOCKET), name: SO_KEEPALIVE) ?? false
+        }
+        set {
+            socket?.setsockopt(level: Int(SOL_SOCKET), name: SO_KEEPALIVE, value: newValue)
+        }
+    }
+
+    var keepAliveInterval: Int32 {
+        get {
+            return socket?.getsockopt(level: IPPROTO_TCP, name: TCP_KEEPINTVL) ?? 0
+        }
+        set {
+            socket?.setsockopt(level: IPPROTO_TCP, name: TCP_KEEPINTVL, value: newValue)
+        }
+    }
+
+    /// number of keepalives before close
+    var keepAliveCount: Int32 {
+        get {
+            return socket?.getsockopt(level: IPPROTO_TCP, name: TCP_KEEPCNT) ?? 0
+        }
+        set {
+            socket?.setsockopt(level: IPPROTO_TCP, name: TCP_KEEPCNT, value: newValue)
+        }
+    }
+
 }
