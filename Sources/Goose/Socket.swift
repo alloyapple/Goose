@@ -175,8 +175,8 @@ public class Socket {
         }
     }
 
-    public func write(_ data: [UInt8]) throws -> Int {
-        let ret = Glibc.write(self.fd, data, data.count)
+    public func write(_ data: [UInt8], flags: Int32 = 0) throws -> Int {
+        let ret = Glibc.send(self.fd, data, data.count, flags)
 
         guard ret >= 0 else {
             throw GooseError.error()
@@ -190,8 +190,8 @@ public class Socket {
         return try write(array)
     }
 
-    public func read(_ data: inout [Int8]) throws -> Int {
-        let ret = Glibc.read(self.fd, &data, data.count)
+    public func read(_ data: inout [Int8], flags: Int32 = 0) throws -> Int {
+        let ret = Glibc.recv(self.fd, &data, data.count, flags)
         guard ret >= 0 else {
             throw GooseError.error()
         }
@@ -199,8 +199,8 @@ public class Socket {
         return ret
     }
 
-    public func read(max: Int, into buffer: MutableByteBuffer) throws -> Int {
-        let ret = Glibc.read(self.fd, buffer.baseAddress.unsafelyUnwrapped, max)
+    public func read(max: Int, into buffer: MutableByteBuffer, flags: Int32 = 0) throws -> Int {
+        let ret = Glibc.recv(self.fd, buffer.baseAddress.unsafelyUnwrapped, max, flags)
         guard ret >= 0 else {
             throw GooseError.error()
         }
