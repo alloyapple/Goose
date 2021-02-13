@@ -23,8 +23,7 @@ extension Data {
 
             let distance = abs(e.distance(to: &data))
             list.append(Array(data[...distance]))
-            data = data.suffix(distance)
-
+            data = Array(data.dropFirst(distance + 1))
         }
 
         return list

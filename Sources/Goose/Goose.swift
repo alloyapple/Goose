@@ -31,22 +31,27 @@ extension Data {
     }
 }
 
-public extension UnsafeRawPointer {
-    func unretainedValue<T: AnyObject>() -> T {
+extension UnsafeRawPointer {
+    public func unretainedValue<T: AnyObject>() -> T {
         return Unmanaged<T>.fromOpaque(self).takeUnretainedValue()
     }
 
-    func retainedValue<T: AnyObject>() -> T {
+    public func retainedValue<T: AnyObject>() -> T {
         return Unmanaged<T>.fromOpaque(self).takeRetainedValue()
     }
 }
 
-public extension UnsafeMutableRawPointer {
-    func unretainedValue<T: AnyObject>() -> T {
+extension UnsafeMutableRawPointer {
+    public func unretainedValue<T: AnyObject>() -> T {
         return Unmanaged<T>.fromOpaque(self).takeUnretainedValue()
     }
 
-    func retainedValue<T: AnyObject>() -> T {
+    public func retainedValue<T: AnyObject>() -> T {
         return Unmanaged<T>.fromOpaque(self).takeRetainedValue()
     }
+}
+
+extension StringProtocol {
+    public var data: Data { .init(utf8) }
+    public var bytes: [UInt8] { .init(utf8) }
 }

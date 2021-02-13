@@ -59,14 +59,14 @@ final class GooseTests: XCTestCase {
     }
 
     func testData()  {
-        let data = Data("hello \n world".utf8) 
+        let data = Data("hello \n 你 \n world".utf8) 
         let line = data.readLine()
         XCTAssertEqual(line, [104, 101, 108, 108, 111, 32, 10])
 
         let lines = data.readLines()
-        
+        print("\(lines)")
         for line in lines {
-             XCTAssertEqual(line, [104, 101, 108, 108, 111, 32, 10])
+             print("line \(line)")
         }
     }
 
