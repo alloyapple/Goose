@@ -1,6 +1,7 @@
 import Foundation
 import Glibc
 
+
 public typealias Byte = UInt8
 public typealias Bytes = [Byte]
 public typealias ByteBuffer = UnsafeBufferPointer<Byte>
@@ -224,6 +225,29 @@ public class Socket {
 
         let frame = ByteBuffer(start: pointer, count: read)
         return Data(buffer: frame)
+    }
+
+    public func sendall(_ data: [UInt8]) throws {
+        //每次全部发送，当发送的数据小于数据大小，则用poll，来等待能发送为止，继续发送
+        var _data = data
+        var maxlen = data.count
+        repeat {
+            let len = try self.write(_data)
+            if len == _data.count {
+                break
+            }
+
+            _data = Array(_data[len...])
+
+            //默认超时1秒，1秒等不到写入事件，抛出异常
+            try internalSelect(fd: self.fd)
+
+        } while true
+
+    }
+
+    public func sendall(_ data: Data) throws {
+
     }
 
     fileprivate func sockoptsize(_ level: Int32, _ name: Int32) -> Int {

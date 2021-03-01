@@ -1,5 +1,6 @@
 import Foundation
 import Glibc
+import GlibcExtra
 
 public func toAddr(_ addr: inout sockaddr_in) -> UnsafeMutablePointer<sockaddr> {
     return withUnsafeMutablePointer(to: &addr) {
@@ -54,4 +55,14 @@ extension UnsafeMutableRawPointer {
 extension StringProtocol {
     public var data: Data { .init(utf8) }
     public var bytes: [UInt8] { .init(utf8) }
+}
+
+func internalSelect(fd: Int32, writing: Bool = true, ms: Int32 = 1000) throws {
+    let ev = writing ? Int16(POLLOUT) : Int16(POLLIN)
+    var pollfd = Glibc.pollfd(fd: fd, events: ev, revents: 0)
+    let n = poll(&pollfd, 1, ms)
+
+    guard n > 0 else {
+        throw GooseError.error()
+    }
 }
