@@ -230,7 +230,6 @@ public class Socket {
     public func sendall(_ data: [UInt8]) throws {
         //每次全部发送，当发送的数据小于数据大小，则用poll，来等待能发送为止，继续发送
         var _data = data
-        var maxlen = data.count
         repeat {
             let len = try self.write(_data)
             if len == _data.count {
@@ -247,7 +246,8 @@ public class Socket {
     }
 
     public func sendall(_ data: Data) throws {
-
+        let array = [UInt8](data)
+        return try sendall(array)
     }
 
     fileprivate func sockoptsize(_ level: Int32, _ name: Int32) -> Int {
