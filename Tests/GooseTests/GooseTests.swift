@@ -31,8 +31,8 @@ final class GooseTests: XCTestCase {
                 client.options.reuseAddress = true
                 try client.connect(hostname: "127.0.0.1", port: 8999)
                 let str = try client.read(100).asString ?? ""
-                
-                print("received: \(str)")
+
+                XCTAssertEqual(str, "hello world")
 
             } catch GooseError.message(let msg) {
                 XCTAssert(false, "异常错误: \(msg)")
@@ -50,23 +50,26 @@ final class GooseTests: XCTestCase {
         do {
             let r = try getAddrinfo(host: "www.163.com", port: 80)
 
-            for addr in r {
-                print("\(addr.pointee.ai_addrlen)")
+            for _ in r {
+
             }
         } catch {
 
         }
     }
 
-    func testData()  {
-        let data = Data("hello \n 你 \n world".utf8) 
+    func testData() {
+        let data = Data("hello \n 你 \n world".utf8)
         let line = data.readLine()
         XCTAssertEqual(line, [104, 101, 108, 108, 111, 32, 10])
 
         let lines = data.readLines()
-        print("\(lines)")
-        for line in lines {
-             print("line \(line)")
+        for (i, line) in lines.enumerated() {
+            if i == 0 {
+                XCTAssertEqual(line, [104, 101, 108, 108, 111, 32, 10])
+            } else if i == 1 {
+                XCTAssertEqual(line, [32, 228, 189, 160, 32, 10])
+            }
         }
     }
 
