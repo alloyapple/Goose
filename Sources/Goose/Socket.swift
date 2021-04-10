@@ -106,7 +106,7 @@ public class Socket {
 
         let ret = Glibc.bind(self.fd, toAddr(&acceptAddr), UInt32(addrlen))
 
-        guard ret > 0 else {
+        guard ret >= 0 else {
             throw GooseError.error()
         }
     }
@@ -131,7 +131,7 @@ public class Socket {
             fd, addr.pointee.ai_addr,
             addr.pointee.ai_addrlen)
 
-        guard ret > 0 else {
+        guard ret == 0 else {
             throw GooseError.error()
         }
 
@@ -163,7 +163,7 @@ public class Socket {
 
         }
 
-        guard ret > 0 else {
+        guard ret == 0 else {
             throw GooseError.error()
         }
 
