@@ -1,7 +1,6 @@
 import Foundation
 import Glibc
 
-
 public typealias Byte = UInt8
 public typealias Bytes = [Byte]
 public typealias ByteBuffer = UnsafeBufferPointer<Byte>
@@ -341,7 +340,7 @@ extension SocketOptions {
         }
     }
 
-    public  var noDelay: Bool {
+    public var noDelay: Bool {
         get {
             return socket?.getsockopt(level: IPPROTO_TCP, name: TCP_NODELAY) ?? false
         }
