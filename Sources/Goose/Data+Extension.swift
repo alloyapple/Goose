@@ -8,11 +8,11 @@ extension Data {
             return nil
         }
 
-        let distance = abs(e.distance(to: &data))
+        let distance = -e.distance(to: &data)
         return Array(data[...distance])
     }
 
-    public func readLines() -> [[UInt8]] {
+    public func readLines() -> [Array<UInt8>] {
         var list: [[UInt8]] = []
         var data = [UInt8](self)
 
@@ -21,7 +21,7 @@ extension Data {
                 break
             }
 
-            let distance = abs(e.distance(to: &data))
+            let distance = -e.distance(to: &data)
             list.append(Array(data[...distance]))
             data = Array(data.dropFirst(distance + 1))
         }
