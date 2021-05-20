@@ -47,10 +47,6 @@ public func getAddrinfo(
         throw GooseError.error()
     }
 
-    guard res >= 0 else {
-        throw GooseError.error()
-    }
-
     return AddrInfo(result)
 }
 
