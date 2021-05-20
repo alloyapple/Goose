@@ -59,6 +59,7 @@ final class GooseTests: XCTestCase {
     }
 
     func testData() {
+        releaseLog("测试testData")
         let data = Data("hello \n 你 \n world".utf8)
         let line = data.readLine()
         XCTAssertEqual(line, [104, 101, 108, 108, 111, 32, 10])

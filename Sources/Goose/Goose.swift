@@ -66,3 +66,23 @@ func internalSelect(fd: Int32, writing: Bool = true, ms: Int32 = 1000) throws {
         throw GooseError.error()
     }
 }
+
+
+
+func releaseLog(_ message: String = "called", file: String = #file, function: String = #function) {
+	let timestamp = ISO8601DateFormatter.string(from: Date(), timeZone: TimeZone.current, formatOptions: [.withYear, .withMonth, .withDay, .withDashSeparatorInDate, .withTime, .withColonSeparatorInTime, .withSpaceBetweenDateAndTime])
+	print("\(timestamp) \(URL(fileURLWithPath: file, isDirectory: false).deletingPathExtension().lastPathComponent): \(function) \(message)")
+}
+
+func debugLog(_ message: String = "called", file: String = #file, function: String = #function) {
+	#if DEBUG
+		let timestamp = ISO8601DateFormatter.string(from: Date(), timeZone: TimeZone.current, formatOptions: [.withYear, .withMonth, .withDay, .withDashSeparatorInDate, .withTime, .withColonSeparatorInTime, .withSpaceBetweenDateAndTime])
+		print("\(timestamp) \(URL(fileURLWithPath: file, isDirectory: false).deletingPathExtension().lastPathComponent): \(function) \(message)")
+	#endif
+}
+
+@discardableResult
+func debugResult<T>(_ result: T, file: String = #file, function: String = #function) -> T {
+	debugLog("returned: \(result)", file: file, function: function)
+	return result
+}
