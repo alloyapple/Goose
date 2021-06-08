@@ -2,6 +2,9 @@ import Foundation
 import Glibc
 
 extension Data {
+    /**
+        读一行
+    */
     public func readLine() -> [UInt8]? {
         var data = [UInt8](self)
         guard let e = memchr(&data, 10, data.count) else {
@@ -12,7 +15,11 @@ extension Data {
         return Array(data[...distance])
     }
 
+    /**
+        读多行
+    */
     public func readLines() -> [Array<UInt8>] {
+
         var list: [[UInt8]] = []
         var data = [UInt8](self)
 
