@@ -81,7 +81,7 @@ public class Socket {
             }
         }
 
-        throw BindError.error()
+        throw GooseError.error()
 
     }
 
@@ -106,7 +106,7 @@ public class Socket {
         let ret = Glibc.bind(self.fd, toAddr(&acceptAddr), UInt32(addrlen))
 
         guard ret >= 0 else {
-            throw BindError.error()
+            throw GooseError.error()
         }
     }
 
